@@ -1,38 +1,41 @@
 const incompleteList = document.getElementById("incompleteList");
 const completeList = document.getElementById("completeList");
 
-const data = [
-    {
-        "status": "O",
-        "text": "do laundry"
-    },
-    {
-        "status": "O",
-        "text": "do dishes"
-    },
-    {
-        "status": "X",
-        "text": "clean something"
-    },
-    {
-        "status": "O",
-        "text": "eat caow"
-    },
-    {
-        "status": "O",
-        "text": "run a mile"
-    },
-    {
-        "status": "O",
-        "text": "blow my brains out"
-    }
-];
+let data = [];
+
+function fetchData() {
+  fetch('/data')
+    .then(response => response.json())
+    .then(jsonData => {
+      data = jsonData;
+      for (const todo of data) {
+        if (todo.status === "O") {
+          incompleteList.appendChild(createTodoItem(todo));
+        } else {
+          completeList.appendChild(createTodoItem(todo));
+        }
+      }
+    })
+    .catch(error => console.error('Error fetching data:', error));
+}
 
 function saveData(updatedData) {
-    // Here, you would save the updated data to the JSON file.
-    // This example just logs the updated content to the console.
-    console.log(JSON.stringify(updatedData, null, 2));
+  fetch('/data', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updatedData),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Error saving data: ${response.status}`);
+      }
+    })
+    .catch(error => console.error(error));
 }
+
+fetchData();
 
 function makeGhost(div) {
     const ghost = div.cloneNode(true);
@@ -106,16 +109,17 @@ function createTodoItem(todo) {
 }
 
 function updateData() {
-    const updatedData = {
-        incomplete: Array.from(incompleteList.children).map(child => ({
+    const updatedData = [
+        ...Array.from(incompleteList.children).map(child => ({
             status: child.querySelector("input").checked ? "X" : "O",
             text: child.querySelector(".todo-text").textContent
         })),
-        complete: Array.from(completeList.children).map(child => ({
+        ...Array.from(completeList.children).map(child => ({
             status: child.querySelector("input").checked ? "X" : "O",
             text: child.querySelector(".todo-text").textContent
         }))
-    };
+    ];
+
     saveData(updatedData);
 }
 
