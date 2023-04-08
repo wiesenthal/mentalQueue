@@ -1,0 +1,26 @@
+[
+    {
+        "status": "O",
+        "text": "do laundry"
+    },
+    {
+        "status": "O",
+        "text": "do dishes"
+    },
+    {
+        "status": "X",
+        "text": "clean something"
+    },
+    {
+        "status": "O",
+        "text": "eat caow"
+    },
+    {
+        "status": "O",
+        "text": "run a mile"
+    },
+    {
+        "status": "O",
+        "text": "blow my brains out"
+    }
+]

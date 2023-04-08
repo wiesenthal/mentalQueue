@@ -1,0 +1,52 @@
+body {
+    font-family: Arial, sans-serif;
+    --default-font-size: 20px;
+    font-size: var(--default-font-size);
+}
+
+#listContainer {
+    width: 400px;
+}
+
+.todo-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    cursor: move;
+}
+
+.todo-item.dragging {
+    opacity: 0.5;
+    background-color: #fafafa;
+    border-color: #ccc;
+}
+
+.todo-text {
+    width: auto;
+    padding-right: calc(var(--default-font-size)/2);
+    padding-left: calc(var(--default-font-size)/4);
+    margin-left: var(--default-font-size);
+    margin-right: var(--default-font-size);
+    word-break: break-word;
+    hyphens: auto;
+    border-right: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+}
+
+.checked {
+    text-decoration: line-through;
+    color: #888;
+}
+#completeList {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+}
+#completeList .todo-item {
+    background-color: #d5e3d5;
+    border: 1px solid #ddd;
+    cursor: default;
+}
