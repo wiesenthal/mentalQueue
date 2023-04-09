@@ -15,6 +15,7 @@ function fetchData() {
           completeList.appendChild(createTodoItem(todo));
         }
       }
+      updateScrollableStatus();
     })
     .catch(error => console.error('Error fetching data:', error));
 }
@@ -105,6 +106,23 @@ function createTodoItem(todo) {
         updateData();
     });
 
+    // Add contenteditable attribute to make the text editable
+    div.querySelector(".todo-text").setAttribute("contenteditable", "true");
+    // Add event listener for input events to update the data
+    div.querySelector(".todo-text").addEventListener("input", (e) => {
+        todo.text = e.target.textContent; 
+        updateData();
+    }); 
+    // Add event listener for keydown events to handle Enter and Shift+Enter 
+    div.querySelector(".todo-text").addEventListener("keydown", (e) => {
+         if (e.key === "Enter") { 
+            if (!e.shiftKey) {
+                e.preventDefault(); 
+                e.target.blur();
+            }
+        } 
+    });
+
     return div;
 }
 
@@ -119,8 +137,9 @@ function updateData() {
             text: child.querySelector(".todo-text").textContent
         }))
     ];
-
+    
     saveData(updatedData);
+    updateScrollableStatus();
 }
 
 // Update dragover event listeners for both incomplete and complete lists
@@ -154,6 +173,19 @@ completeList.addEventListener("dragover", (e) => {
     }
 });
 
+const trashcan = document.getElementById("trashcan"); 
+trashcan.addEventListener("dragover", (e) => { 
+    e.preventDefault();
+ });
+ trashcan.addEventListener("drop", (e) => { 
+    e.preventDefault();
+     const draggedElement = document.querySelector(".dragging");
+      const draggedElementIndex = parseInt(e.dataTransfer.getData("text/plain"));
+       draggedElement.remove();
+        data.splice(draggedElementIndex, 1);
+         updateData(); 
+});
+
 
 for (const todo of data) {
     if (todo.status === "O") {
@@ -162,3 +194,42 @@ for (const todo of data) {
         completeList.appendChild(createTodoItem(todo));
     }
 }
+
+function updateScrollableStatus() { 
+    const listContainer = document.querySelector("#listContainer");
+    const scrollIndicator = document.querySelector("#scrollIndicatorContainer");
+    if(listContainer.scrollHeight > listContainer.clientHeight)
+    {
+        scrollIndicator.style.display = "flex";
+    }
+    else
+    {
+        scrollIndicator.style.display = "none";
+    }
+}
+
+updateScrollableStatus();
+
+const addNewTodoButton = document.getElementById("addNewTodo");
+
+addNewTodoButton.addEventListener("click", () => {
+    const newTodo = {
+        status: "O",
+        text: "New Entry"
+    };
+
+    const newTodoElement = createTodoItem(newTodo);
+    newTodoElement.classList.add("new-todo");
+    newTodoElement.querySelector(".todo-text").focus();
+
+    // Empty the text when clicked
+    newTodoElement.querySelector(".todo-text").addEventListener("click", () => {
+        newTodoElement.querySelector(".todo-text").textContent = "";
+        newTodoElement.classList.remove("new-todo");
+    }, { once: true });
+
+    incompleteList.insertBefore(newTodoElement, incompleteList.firstChild);
+
+    data.push(newTodo);
+    updateData();
+});

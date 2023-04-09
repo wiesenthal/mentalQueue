@@ -1,22 +1,30 @@
 [
   {
     "status": "O",
-    "text": "do dishes"
+    "text": "codeDog code blocks"
   },
   {
     "status": "O",
-    "text": "eat caow"
+    "text": "codeDog audit tokens & time"
   },
   {
     "status": "O",
-    "text": "do laundry"
+    "text": "prompt engineer"
+  },
+  {
+    "status": "O",
+    "text": "Dependencies mental queue"
   },
   {
     "status": "X",
-    "text": "run a mile"
+    "text": "demo to family"
   },
   {
     "status": "X",
-    "text": "clean something"
+    "text": "yoga"
+  },
+  {
+    "status": "X",
+    "text": "Add/delete button mental queue"
   }
 ]
