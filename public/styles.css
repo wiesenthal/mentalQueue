@@ -78,6 +78,15 @@ body {
     color: #ffffff;
 }
 
+code {
+    background-color: #aac2db;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.8em;
+    font-family: monospace;
+}
+
 #listContainer { 
     max-height: 60vh;
     overflow-y: scroll;
