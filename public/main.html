@@ -7,7 +7,15 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Mental Queue</h2>
+    <div style="display: flex; align-items: center;">
+        <h2 style="margin-right: 1rem;">Mental Queue</h2>
+        <button id="createNewList">New List</button>
+        <select id="listSelector" style="margin-left: 1rem;"></select>
+    </div>
+    <div id="listNameContainer" style="display: flex; align-items: center; margin-right: 1rem;">
+        <span id="currentListName" contenteditable="true" style="text-decoration: underline;">Unnamed</span>
+        <button id="DeleteList">X</button>
+    </div>
     <div id="container">
         <div id="addNewTodo">New...</div>
         <div id="listContainer">

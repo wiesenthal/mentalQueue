@@ -107,3 +107,28 @@ code {
     font-style: italic;
     color: #707070;
 }
+
+#listNameContainer {
+    width: 400px;
+}
+
+#currentListName {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    font-family:'Courier New', Courier, monospace;
+    /* align center */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#DeleteList {
+    background-color: #ff5f3f;
+    border: 1px solid #000;
+    padding: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    user-select: none;
+    color: #ffffff;
+    /* align to the right */
+    margin-left: auto;
+}

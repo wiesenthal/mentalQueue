@@ -2,12 +2,24 @@ const incompleteList = document.getElementById("incompleteList");
 const completeList = document.getElementById("completeList");
 
 let data = [];
+let activeListId = "1";
+const currentListName = document.getElementById("currentListName");
 
-function fetchData() {
-  fetch('/data')
+if (sessionStorage.getItem("activeListId")) {
+    activeListId = sessionStorage.getItem("activeListId");
+  }
+
+function fetchData(listId) {
+  if (!listId) {
+    listId = activeListId;
+  }
+  fetch(`/data/${listId}`)
     .then(response => response.json())
     .then(jsonData => {
       data = jsonData;
+      incompleteList.innerHTML = "";
+      completeList.innerHTML = "";
+
       for (const todo of data) {
         if (todo.status === "O") {
           incompleteList.appendChild(createTodoItem(todo));
@@ -21,7 +33,7 @@ function fetchData() {
 }
 
 function saveData(updatedData) {
-  fetch('/data', {
+  fetch(`/data/${activeListId}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -232,4 +244,121 @@ addNewTodoButton.addEventListener("click", () => {
 
     data.push(newTodo);
     updateData();
+});
+
+// list selection
+
+const createNewListButton = document.getElementById("createNewList");
+const listSelector = document.getElementById("listSelector");
+
+function updateListSelector() {
+    listSelector.innerHTML = "";
+    Object.keys(dataMap).forEach((id) => {
+      const option = document.createElement("option");
+      option.value = id;
+      option.text = dataMap[id].name;
+      if (id === activeListId) {
+        option.selected = true;
+        currentListName.textContent = dataMap[id].name;
+      }
+      listSelector.appendChild(option);
+    });
+  }
+
+  createNewListButton.addEventListener("click", () => {
+    const listName = "New List";
+    // create a new list
+    const newListId = (Object.keys(dataMap).length + 1).toString();
+    dataMap[newListId] = { filename: `${newListId}.json`, name: listName };
+  
+    // save the dataMap to the backend
+    fetch("/dataMap", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataMap),
+    }).then(() => {
+      // change the active list to the new list
+      activeListId = newListId;
+  
+      // reflect this in the UI
+      updateListSelector();
+  
+      // create the new list file with an empty array, and fetch the new list
+      fetch(`/data/${newListId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify([]),
+      }).then(() => {
+        fetchData(activeListId);
+      });
+    });
+  });
+
+listSelector.addEventListener("change", (e) => {
+// switch the active list
+    activeListId = e.target.value;
+    sessionStorage.setItem("activeListId", activeListId);
+    fetchData(activeListId);
+    currentListName.textContent = dataMap[activeListId].name;
+});
+
+const deleteListButton = document.getElementById("DeleteList");
+
+deleteListButton.addEventListener("click", () => {
+  const confirmation = confirm("Are you sure you want to delete this list?");
+
+  if (confirmation) {
+    // Delete list from dataMap
+    delete dataMap[activeListId];
+
+    // Save the updated dataMap to the backend
+    fetch("/dataMap", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataMap),
+    }).then(() => {
+      // Switch to the first list after deleting the current active list
+      if (Object.keys(dataMap).length > 0) {
+        activeListId = Object.keys(dataMap)[0];
+      } else {
+        activeListId = ""; // If no other lists exist, set activeListId empty
+      }
+
+      // Update the sessionStorage
+      sessionStorage.setItem("activeListId", activeListId);
+
+      // Update the list selector and fetch the new data
+      updateListSelector();
+      fetchData(activeListId);
+    });
+  }
+});
+
+fetch("/dataMap")
+  .then((response) => response.json())
+  .then((mapData) => {
+    dataMap = mapData;
+    updateListSelector();
+  })
+  .catch((error) => console.error("Error fetching data map:", error));
+
+currentListName.addEventListener("blur", () => {
+  const newName = currentListName.textContent.trim();
+  if (newName !== "" && dataMap[activeListId].name !== newName) {
+    dataMap[activeListId].name = newName;
+    updateListSelector();
+    fetch("/dataMap", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataMap),
+    }).catch((error) => console.error("Error saving data map:", error));
+  }
 });
