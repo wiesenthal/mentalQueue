@@ -11,7 +11,7 @@ if (sessId && sessId != "undefined") {
   activeListId = sessionStorage.getItem("activeListId");
 }
 
-function fetchData(listId) {
+function fetchDataMap() {
   fetch("/dataMap")
     .then((response) => response.json())
     .then((mapData) => {
@@ -19,6 +19,10 @@ function fetchData(listId) {
       updateListSelector();
     })
     .catch((error) => console.error("Error fetching data map:", error));
+}
+
+function fetchData(listId) {
+  fetchDataMap()
   
   if (!listId) {
     listId = activeListId;
@@ -195,11 +199,19 @@ completeList.addEventListener("dragover", (e) => {
     }
 });
 
+incompleteList.addEventListener("drop", (e) => {
+  updateData();
+});
+
+completeList.addEventListener("drop", (e) => {
+  updateData();
+});
+
 const trashcan = document.getElementById("trashcan"); 
 trashcan.addEventListener("dragover", (e) => { 
     e.preventDefault();
  });
- trashcan.addEventListener("drop", (e) => { 
+ trashcan.addEventListener("drop", (e) => {
     e.preventDefault();
      const draggedElement = document.querySelector(".dragging");
       const draggedElementIndex = parseInt(e.dataTransfer.getData("text/plain"));
@@ -273,31 +285,32 @@ function updateListSelector() {
       }
       listSelector.appendChild(option);
     });
-  }
+}
 
-  createNewListButton.addEventListener("click", () => {
-    const listName = "New List";
-    // create a new list
-    const newListId = (Object.keys(dataMap).length + 1).toString();
-    dataMap[newListId] = { filename: `${newListId}.json`, name: listName };
-  
-    // save the dataMap to the backend
-    fetch("/dataMap", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(dataMap),
-    }).then(() => {
-      // change the active list to the new list
-      activeListId = newListId;
-  
-      // reflect this in the UI
-      updateListSelector();
-      
-      // fetchData(activeListId);
-    });
+createNewListButton.addEventListener("click", () => {
+  const listName = "New List";
+  const newListId = (Object.keys(dataMap).length + 1).toString();
+  dataMap[newListId] = { name: listName };
+
+  // save the dataMap to the backend
+  fetch("/dataMap", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(dataMap),
+  }).then(() => {
+    // change the active list to the new list
+    activeListId = newListId;
+    // reflect this in the UI
+    updateListSelector();
+    
+    fetchData(activeListId);
+
+    // switch to active list
+    sessionStorage.setItem("activeListId", activeListId);
   });
+});
 
 listSelector.addEventListener("change", (e) => {
 // switch the active list
@@ -315,26 +328,22 @@ deleteListButton.addEventListener("click", () => {
   if (confirmation) {
     // Delete list from dataMap
     delete dataMap[activeListId];
-
-    // Save the updated dataMap to the backend
-    fetch("/dataMap", {
+    fetch ("/deleteList", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(dataMap),
+      body: JSON.stringify({"id": activeListId}),
     }).then(() => {
       // Switch to the previous item
       if (Object.keys(dataMap).length > 0) {
-        activeListId = Object.keys(dataMap)[0];
+        activeListId = Object.keys(dataMap)[Object.keys(dataMap).length - 1];
       } else {
         activeListId = ""; // If no other lists exist, set activeListId empty
       }
       console.log(activeListId);
-      // Update the sessionStorage
-      sessionStorage.setItem("activeListId", activeListId);
-
       // Update the list selector and fetch the new data
+      sessionStorage.setItem("activeListId", activeListId);
       updateListSelector();
       fetchData(activeListId);
     });

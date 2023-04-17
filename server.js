@@ -48,8 +48,21 @@ app.post("/dataMap", (req, res) => {
   // write new data files
   // dataMap format is {id: {filename: "filename", name: "name"}}
   for (const id in newDataMap) {
+    if (!newDataMap[id].filename) {
+      let i = id
+      while (fs.existsSync(`data/${i}.json`)) {
+        i++;
+        if (i > 1000) {
+          throw ("Too many files!");
+        }
+      }
+      newDataMap[id].filename = `${i}.json`;
+    }
     const dataFile = `data/${newDataMap[id].filename}`;
-    fs.writeFileSync(dataFile, "[]", {encoding: 'utf-8'});
+    // if file does not exist
+    if (!fs.existsSync(dataFile)) {
+      fs.writeFileSync(dataFile, "[]", {encoding: 'utf-8'});
+    }
   }
   fs.writeFileSync('./data/dataMap.json', JSON.stringify(newDataMap), {encoding: 'utf-8'});
   res.status(200).send('Data map saved');
@@ -57,6 +70,20 @@ app.post("/dataMap", (req, res) => {
 });
 
 app.get("/dataMap", (req, res) => {
+  refreshDataMap();
+  res.json(dataMap);
+});
+
+app.post("/deleteList", (req, res) => {
+  const id = req.body.id;
+  // delete dataFile
+  const dataFile = `data/${dataMap[id].filename}`;
+  if (fs.existsSync(dataFile)) {
+    fs.unlinkSync(dataFile);
+  }
+  // remove from dataMap
+  delete dataMap[id];
+  fs.writeFileSync('./data/dataMap.json', JSON.stringify(dataMap), {encoding: 'utf-8'});
   refreshDataMap();
   res.json(dataMap);
 });
