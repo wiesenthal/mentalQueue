@@ -7,13 +7,8 @@ const port = 3000;
 dataMap = require('./data/dataMap.json')
 
 const refreshDataMap = () => {
-  fs.readFile('./data/dataMap.json', "utf-8", (err, data) => {
-    if (err) {
-      console.error(err);
-    } else {
-      dataMap = JSON.parse(data);
-    }
-  });
+  const data = fs.readFileSync('./data/dataMap.json', "utf-8");
+  dataMap = JSON.parse(data);
 }
 
 
@@ -29,13 +24,13 @@ app.get("/data/:id", (req, res) => {
   refreshDataMap();
   const id = req.params.id;
   const dataFile = `data/${dataMap[id].filename}`;
-  fs.readFile(dataFile, "utf-8", (err, data) => {
-    if (err) {
-      res.status(500).send("Error reading data file");
-    } else {
-      res.json(JSON.parse(data));
-    }
-  });
+  const data = fs.readFileSync(dataFile, {"encoding": "utf-8"});
+  if (data) {
+    res.json(JSON.parse(data));
+  }
+  else {
+    res.status(500).send("Error reading data file");
+  }
 });
 
 
@@ -44,14 +39,8 @@ app.post('/data/:id', (req, res) => {
   const id = req.params.id;
   const dataFile = `data/${dataMap[id].filename}`;
   const data = JSON.stringify(req.body, null, 2);
-  fs.writeFile(dataFile, data, 'utf8', (err) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Error saving data file');
-    } else {
-      res.status(200).send('Data saved');
-    }
-  });
+  fs.writeFileSync(dataFile, data, {encoding: 'utf-8'});
+  res.status(200).send('Data saved');
 });
 
 app.post("/dataMap", (req, res) => {
@@ -60,23 +49,11 @@ app.post("/dataMap", (req, res) => {
   // dataMap format is {id: {filename: "filename", name: "name"}}
   for (const id in newDataMap) {
     const dataFile = `data/${newDataMap[id].filename}`;
-    if (!fs.existsSync(dataFile)) {
-      fs.writeFile(dataFile, "{}", 'utf8', (err) => {
-        if (err) {
-          console.error(err);
-          res.status(500).send('Error creating data file');
-        }
-      });
-    }
+    fs.writeFileSync(dataFile, "[]", {encoding: 'utf-8'});
   }
-  fs.writeFile('./data/dataMap.json', JSON.stringify(newDataMap), 'utf8', (err) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Error saving data map');
-    } else {
-      res.status(200).send('Data map saved');
-    }
-  });
+  fs.writeFileSync('./data/dataMap.json', JSON.stringify(newDataMap), {encoding: 'utf-8'});
+  res.status(200).send('Data map saved');
+  refreshDataMap();
 });
 
 app.get("/dataMap", (req, res) => {

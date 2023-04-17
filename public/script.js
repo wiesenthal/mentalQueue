@@ -3,13 +3,23 @@ const completeList = document.getElementById("completeList");
 
 let data = [];
 let activeListId = "1";
+let dataMap = {};
 const currentListName = document.getElementById("currentListName");
 
-if (sessionStorage.getItem("activeListId")) {
-    activeListId = sessionStorage.getItem("activeListId");
-  }
+sessId = sessionStorage.getItem("activeListId");
+if (sessId && sessId != "undefined") {
+  activeListId = sessionStorage.getItem("activeListId");
+}
 
 function fetchData(listId) {
+  fetch("/dataMap")
+    .then((response) => response.json())
+    .then((mapData) => {
+      dataMap = mapData;
+      updateListSelector();
+    })
+    .catch((error) => console.error("Error fetching data map:", error));
+  
   if (!listId) {
     listId = activeListId;
   }
@@ -284,17 +294,8 @@ function updateListSelector() {
   
       // reflect this in the UI
       updateListSelector();
-  
-      // create the new list file with an empty array, and fetch the new list
-      fetch(`/data/${newListId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify([]),
-      }).then(() => {
-        fetchData(activeListId);
-      });
+      
+      // fetchData(activeListId);
     });
   });
 
@@ -323,13 +324,13 @@ deleteListButton.addEventListener("click", () => {
       },
       body: JSON.stringify(dataMap),
     }).then(() => {
-      // Switch to the first list after deleting the current active list
+      // Switch to the previous item
       if (Object.keys(dataMap).length > 0) {
         activeListId = Object.keys(dataMap)[0];
       } else {
         activeListId = ""; // If no other lists exist, set activeListId empty
       }
-
+      console.log(activeListId);
       // Update the sessionStorage
       sessionStorage.setItem("activeListId", activeListId);
 
@@ -340,13 +341,6 @@ deleteListButton.addEventListener("click", () => {
   }
 });
 
-fetch("/dataMap")
-  .then((response) => response.json())
-  .then((mapData) => {
-    dataMap = mapData;
-    updateListSelector();
-  })
-  .catch((error) => console.error("Error fetching data map:", error));
 
 currentListName.addEventListener("blur", () => {
   const newName = currentListName.textContent.trim();
