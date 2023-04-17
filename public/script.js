@@ -365,3 +365,13 @@ currentListName.addEventListener("blur", () => {
     }).catch((error) => console.error("Error saving data map:", error));
   }
 });
+
+// Add event listener for keydown events to handle Enter and Shift+Enter 
+currentListName.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { 
+     if (!e.shiftKey) {
+         e.preventDefault(); 
+         e.target.blur();
+     }
+ } 
+});
